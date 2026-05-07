@@ -301,3 +301,9 @@
       state.step = 6;
       render();
     }
+  }; // IroStyle objesini kapatır
+
+  // Uygulamayı ilk kez ekrana çiz (Sağ alttaki butonu çıkarır)
+  render();
+
+})(); // En baştaki ana fonksiyonu kapatır
