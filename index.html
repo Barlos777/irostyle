@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ModaBoutique — Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #f9f7f4; }
+    header { background: #fff; padding: 16px 32px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 20px; font-weight: bold; }
+    nav span { margin-left: 20px; font-size: 14px; color: #666; cursor: pointer; }
+    .banner { background: #1a0a00; color: #D4A843; text-align: center; padding: 10px; font-size: 12px; }
+    .products { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; padding: 32px; max-width: 900px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .card-img { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 56px; }
+    .card-body { padding: 14px; }
+    .card-name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .card-price { font-size: 14px; color: #c00; }
+    .card-btn { display: block; width: 100%; margin-top: 10px; padding: 9px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="banner">✦ Sağ alt köşedeki butona tıklayarak IroStyle Stil Asistanını deneyin</div>
+
+<header>
+  <h1>ModaBoutique</h1>
+  <nav><span>Kadın</span><span>Erkek</span><span>Aksesuar</span></nav>
+</header>
+
+<div class="products">
+  <div class="card"><div class="card-img" style="background:#f0e8e0">👗</div><div class="card-body"><div class="card-name">Yazlık Elbise</div><div class="card-price">899 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+  <div class="card"><div class="card-img" style="background:#e8eef5">👔</div><div class="card-body"><div class="card-name">Klasik Gömlek</div><div class="card-price">649 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+  <div class="card"><div class="card-img" style="background:#f5f0e8">🧥</div><div class="card-body"><div class="card-name">Trençkot</div><div class="card-price">2.499 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+  <div class="card"><div class="card-img" style="background:#eef5ee">👖</div><div class="card-body"><div class="card-name">Slim Pantolon</div><div class="card-price">799 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+  <div class="card"><div class="card-img" style="background:#f5eef5">👜</div><div class="card-body"><div class="card-name">Deri Çanta</div><div class="card-price">1.299 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+  <div class="card"><div class="card-img" style="background:#f5f5ee">👟</div><div class="card-body"><div class="card-name">Spor Ayakkabı</div><div class="card-price">1.099 TL</div><button class="card-btn">Sepete Ekle</button></div></div>
+</div>
+
+<!-- IroStyle Widget — tek satır -->
+<script src="/widget.js"></script>
+
+</body>
+</html>
