@@ -1,8 +1,8 @@
 {
-    "name": "irostyle",
-    "version": "1.0.0",
-    "type": "module",
-    "dependencies": {
-      "@google/generative-ai": "^0.11.4"
-    }
+  "name": "irostyle",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@google/generative-ai": "^0.11.4"
   }
+}
