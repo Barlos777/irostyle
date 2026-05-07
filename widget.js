@@ -1,8 +1,6 @@
 (function () {
   // ============================================================
-  //  IroStyle Widget — v1.0
-  //  Herhangi bir siteye tek satırla gömülür:
-  //  <script src="widget.js"></script>
+  //  IroStyle Widget — v1.1 (Focus Fix & Error Handling)
   // ============================================================
 
   const SKIN_TONES = [
@@ -25,120 +23,54 @@
   const EYES = ["Siyah", "Koyu Kahve", "Açık Kahve", "Yeşil", "Mavi", "Ela"];
   const OCCASIONS = ["İş / Ofis", "Düğün / Davet", "Günlük", "Randevu", "Spor"];
 
-  // ── State ──────────────────────────────────────────────────
   let state = {
     open: false, step: 1, loading: false, result: null,
     product: "", height: "", weight: "",
     skinTone: null, hairColor: "", eyeColor: "", occasion: "",
   };
 
-  // ── Inject Styles ──────────────────────────────────────────
   const style = document.createElement("style");
   style.textContent = `
     #iro-widget-root * { box-sizing: border-box; font-family: Georgia, serif; }
-    #iro-fab {
-      position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-      background: linear-gradient(135deg, #1a0a00, #3d1a00);
-      color: #D4A843; border: 1px solid #D4A843;
-      padding: 13px 20px; border-radius: 32px; cursor: pointer;
-      font-size: 14px; font-weight: bold; letter-spacing: 0.5px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.2);
-      transition: transform 0.2s;
-    }
+    #iro-fab { position: fixed; bottom: 24px; right: 24px; z-index: 99999; background: linear-gradient(135deg, #1a0a00, #3d1a00); color: #D4A843; border: 1px solid #D4A843; padding: 13px 20px; border-radius: 32px; cursor: pointer; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.2); transition: transform 0.2s; }
     #iro-fab:hover { transform: scale(1.04); }
-    #iro-panel {
-      position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-      width: 320px; background: #0f0800;
-      border: 1px solid rgba(212,168,67,0.3); border-radius: 20px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
-      overflow: hidden; display: flex; flex-direction: column;
-    }
-    #iro-header {
-      background: linear-gradient(135deg, #1a0a00, #2d1200);
-      padding: 15px 18px;
-      border-bottom: 1px solid rgba(212,168,67,0.2);
-      display: flex; justify-content: space-between; align-items: center;
-    }
+    #iro-panel { position: fixed; bottom: 24px; right: 24px; z-index: 99999; width: 320px; background: #0f0800; border: 1px solid rgba(212,168,67,0.3); border-radius: 20px; box-shadow: 0 24px 80px rgba(0,0,0,0.7); overflow: hidden; display: flex; flex-direction: column; }
+    #iro-header { background: linear-gradient(135deg, #1a0a00, #2d1200); padding: 15px 18px; border-bottom: 1px solid rgba(212,168,67,0.2); display: flex; justify-content: space-between; align-items: center; }
     #iro-progress-bar { height: 2px; background: rgba(212,168,67,0.1); }
     #iro-progress-fill { height: 100%; background: #D4A843; transition: width 0.4s ease; }
     #iro-body { padding: 18px; max-height: 440px; overflow-y: auto; }
     #iro-footer { padding: 0 18px 18px; }
     .iro-label { color: rgba(212,168,67,0.75); font-size: 12px; margin-bottom: 14px; }
-    .iro-sublabel { color: rgba(255,255,255,0.3); font-size: 10px; margin-bottom: 12px; }
     .iro-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .iro-chip {
-      padding: 10px 8px; border-radius: 10px; cursor: pointer;
-      font-size: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.55);
-      transition: all 0.2s; width: 100%;
-    }
+    .iro-chip { padding: 10px 8px; border-radius: 10px; cursor: pointer; font-size: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.55); transition: all 0.2s; width: 100%; }
     .iro-chip.active { background: rgba(212,168,67,0.15); border-color: #D4A843; color: #D4A843; }
-    .iro-input {
-      width: 100%; padding: 11px; margin-bottom: 10px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,67,0.2);
-      border-radius: 10px; color: #fff; font-size: 14px;
-      outline: none; font-family: Georgia, serif;
-    }
+    .iro-input { width: 100%; padding: 11px; margin-bottom: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,168,67,0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; font-family: Georgia, serif; }
     .iro-skin-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; }
-    .iro-skin-dot {
-      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: all 0.2s;
-      display: block; margin: 0 auto 4px;
-    }
+    .iro-skin-dot { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; display: block; margin: 0 auto 4px; }
     .iro-skin-dot.active { border-color: #D4A843; box-shadow: 0 0 0 2px rgba(212,168,67,0.4); }
     .iro-skin-name { font-size: 8px; color: rgba(255,255,255,0.3); text-align: center; }
     .iro-tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
-    .iro-tag {
-      padding: 7px 12px; border-radius: 20px; cursor: pointer; font-size: 12px;
-      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
-      color: rgba(255,255,255,0.5); transition: all 0.2s;
-    }
+    .iro-tag { padding: 7px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); transition: all 0.2s; }
     .iro-tag.active { border-color: #D4A843; background: rgba(212,168,67,0.13); color: #D4A843; }
-    .iro-occasion {
-      padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 13px;
-      text-align: left; border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.55);
-      transition: all 0.2s; width: 100%; margin-bottom: 8px;
-    }
+    .iro-occasion { padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; text-align: left; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.55); transition: all 0.2s; width: 100%; margin-bottom: 8px; }
     .iro-occasion.active { border-color: #D4A843; background: rgba(212,168,67,0.12); color: #D4A843; }
-    .iro-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; padding: 13px; margin-bottom: 10px;
-    }
-    .iro-card-gold {
-      background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.2);
-      border-radius: 12px; padding: 13px; margin-bottom: 10px;
-    }
+    .iro-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 13px; margin-bottom: 10px; }
+    .iro-card-gold { background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.2); border-radius: 12px; padding: 13px; margin-bottom: 10px; }
     .iro-card-label { color: rgba(212,168,67,0.6); font-size: 9px; letter-spacing: 1px; margin-bottom: 8px; }
     .iro-swatch { width: 38px; height: 38px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-    .iro-main-btn {
-      width: 100%; padding: 12px; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: bold; font-family: Georgia, serif;
-      cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
-    }
+    .iro-main-btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
     .iro-main-btn.active { background: linear-gradient(135deg,#D4A843,#B8902E); color: #0f0800; }
     .iro-main-btn.disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: default; }
-    .iro-secondary-btn {
-      width: 100%; padding: 10px; border-radius: 10px; cursor: pointer;
-      background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.3);
-      color: #D4A843; font-size: 13px; font-family: Georgia, serif; margin-top: 4px;
-    }
+    .iro-secondary-btn { width: 100%; padding: 10px; border-radius: 10px; cursor: pointer; background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.3); color: #D4A843; font-size: 13px; font-family: Georgia, serif; margin-top: 4px; }
     .iro-spinner { text-align: center; padding: 30px 0; }
-    .iro-quote {
-      background: linear-gradient(135deg,rgba(212,168,67,0.1),rgba(212,168,67,0.05));
-      border: 1px solid rgba(212,168,67,0.25); border-radius: 12px;
-      padding: 13px; color: #D4A843; font-size: 13px; font-style: italic;
-      line-height: 1.5; text-align: center; margin-bottom: 12px;
-    }
+    .iro-quote { background: linear-gradient(135deg,rgba(212,168,67,0.1),rgba(212,168,67,0.05)); border: 1px solid rgba(212,168,67,0.25); border-radius: 12px; padding: 13px; color: #D4A843; font-size: 13px; font-style: italic; line-height: 1.5; text-align: center; margin-bottom: 12px; }
   `;
   document.head.appendChild(style);
 
-  // ── Root ───────────────────────────────────────────────────
   const root = document.createElement("div");
   root.id = "iro-widget-root";
   document.body.appendChild(root);
 
-  // ── Render ─────────────────────────────────────────────────
   function render() {
     root.innerHTML = "";
 
@@ -157,7 +89,6 @@
     };
 
     const pct = Math.round((state.step / 5) * 100);
-
     let body = "";
 
     if (state.loading) {
@@ -172,11 +103,10 @@
         ).join("")}</div>`;
     } else if (state.step === 2) {
       body = `<div class="iro-label">Boy ve kilonu gir</div>
-        <input class="iro-input" type="number" placeholder="Boy (cm)" min="140" max="220" value="${state.height}" oninput="IroStyle.set('height',this.value)">
-        <input class="iro-input" type="number" placeholder="Kilo (kg)" min="40" max="150" value="${state.weight}" oninput="IroStyle.set('weight',this.value)">`;
+        <input class="iro-input" type="number" placeholder="Boy (cm)" value="${state.height}" oninput="IroStyle.updateInput('height',this.value)">
+        <input class="iro-input" type="number" placeholder="Kilo (kg)" value="${state.weight}" oninput="IroStyle.updateInput('height', state.height); state.weight=this.value; document.getElementById('iro-next-btn').className = (state.height && state.weight) ? 'iro-main-btn active' : 'iro-main-btn disabled';">`;
     } else if (state.step === 3) {
       body = `<div class="iro-label">Ten rengini seç</div>
-        <div class="iro-sublabel">Türkiye tonları · Global tonlar</div>
         <div class="iro-skin-grid">${SKIN_TONES.map((t, i) =>
           `<div>
             <button class="iro-skin-dot ${state.skinTone?.hex === t.hex ? "active" : ""}"
@@ -211,26 +141,26 @@
       body = `
         <div class="iro-card-gold">
           <div class="iro-card-label">ÖNERİLEN BEDEN</div>
-          <div style="color:#D4A843;font-size:22px;font-weight:bold">${r.beden}</div>
-          <div style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:4px">${r.bedenAciklama}</div>
+          <div style="color:#D4A843;font-size:22px;font-weight:bold">${r.beden || "-"}</div>
+          <div style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:4px">${r.bedenAciklama || ""}</div>
         </div>
         <div class="iro-card">
-          <div class="iro-card-label">WADA × ${(r.mevsimTipi || "").toUpperCase()} PALETİ</div>
+          <div class="iro-card-label">WADA × ${(r.mevsimTipi || "PALET").toUpperCase()}</div>
           <div style="display:flex">${swatches}</div>
         </div>
         <div class="iro-card">
           <div class="iro-card-label">STİL TAVSİYESİ</div>
-          <div style="color:rgba(255,255,255,0.8);font-size:12px;line-height:1.6;margin-bottom:8px">${r.urunOnerisi}</div>
-          <div style="color:rgba(255,255,255,0.5);font-size:12px;line-height:1.6;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px">🎯 ${r.kombinOnerisi}</div>
+          <div style="color:rgba(255,255,255,0.8);font-size:12px;line-height:1.6;margin-bottom:8px">${r.urunOnerisi || ""}</div>
+          <div style="color:rgba(255,255,255,0.5);font-size:12px;line-height:1.6;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px">🎯 ${r.kombinOnerisi || ""}</div>
         </div>
-        <div class="iro-quote">"${r.stilMesaji}"</div>
+        <div class="iro-quote">"${r.stilMesaji || ""}"</div>
         <button class="iro-secondary-btn" onclick="IroStyle.reset()">✦ Yeni Analiz</button>`;
     }
 
     const footer = state.step <= 5 && !state.loading ? `
       <div id="iro-footer">
-        <button class="iro-main-btn ${canNext() ? "active" : "disabled"}"
-          onclick="${state.step === 5 ? "IroStyle.analyze()" : "IroStyle.next()"}">
+        <button id="iro-next-btn" class="iro-main-btn ${canNext() ? "active" : "disabled"}"
+          onclick="if(this.classList.contains('active')){ ${state.step === 5 ? "IroStyle.analyze()" : "IroStyle.next()"} }">
           ${state.step === 5 ? "✦ Analiz Et" : "Devam →"}
         </button>
       </div>` : "";
@@ -254,46 +184,53 @@
       </div>`;
   }
 
-  // ── API ────────────────────────────────────────────────────
   window.IroStyle = {
     open() { state.open = true; render(); },
     close() { state.open = false; render(); },
     set(field, value) { state[field] = value; render(); },
     setSkin(i) { state.skinTone = SKIN_TONES[i]; render(); },
     next() { state.step++; render(); },
-    reset() {
-      state = { ...state, step: 1, result: null, loading: false, product: "", height: "", weight: "", skinTone: null, hairColor: "", eyeColor: "", occasion: "" };
-      render();
+    reset() { state = { ...state, step: 1, result: null, loading: false, product: "", height: "", weight: "", skinTone: null, hairColor: "", eyeColor: "", occasion: "" }; render(); },
+    updateInput(field, value) {
+      state[field] = value;
+      const btn = document.getElementById("iro-next-btn");
+      if (btn) btn.className = (state.height && state.weight) ? "iro-main-btn active" : "iro-main-btn disabled";
     },
     async analyze() {
       state.loading = true;
-      render();
+      render(); // Yükleniyor animasyonunu gösterir
 
       try {
         const prompt = `Ürün: ${state.product}, Boy: ${state.height}cm, Kilo: ${state.weight}kg, Ten: ${state.skinTone?.label}, Saç: ${state.hairColor}, Göz: ${state.eyeColor}, Ortam: ${state.occasion}`;
-        
         const systemPrompt = `Sen IroStyle stil danışmanısın. Kullanıcıya boy, kilo ve renk analizine göre moda tavsiyeleri veriyorsun. Wada, Itten ve Kibbe teorilerini kullan. Sadece şu JSON formatını döndür: {"beden":"...","bedenAciklama":"...","mevsimTipi":"...","palet":[{"hex":"#...","ad":"..."}],"urunOnerisi":"...","kombinOnerisi":"...","stilMesaji":"..."}`;
 
-        // Doğrudan API anahtarı kullanmak yerine güvenli köprümüze (/api/styler) soruyoruz
         const res = await fetch("/api/styler", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, systemPrompt })
         });
 
+        if (!res.ok) throw new Error("Sunucu cevap vermedi (Kod: " + res.status + ")");
+
         const data = await res.json();
+        let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || data.text || data.result;
         
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-          let resultText = data.candidates[0].content.parts[0].text;
-          // AI bazen yanıtı ```json ... ``` içinde verebilir, onu temizliyoruz
-          resultText = resultText.replace(/```json|```/g, "").trim();
-          state.result = JSON.parse(resultText);
-        }
+        if (!resultText) throw new Error("API'den boş cevap geldi.");
+
+        resultText = resultText.replace(/```json|```/g, "").trim();
+        state.result = JSON.parse(resultText);
+
       } catch (err) {
         console.error("Analiz hatası:", err);
+        // Hata olsa bile sistemi çökertmeyip hata mesajını şık bir şekilde gösteririz
         state.result = {
-          beden: "M",
-          stilMesaji: "Küçük bir bağlantı sorunu oldu, lütfen tekrar dene."
+          beden: "⚠️",
+          bedenAciklama: "Bağlantı Hatası",
+          mevsimTipi: "HATA",
+          palet: [{hex: "#333333", ad: "Sistem"}],
+          urunOnerisi: "Şu anda stil analizini yapacak olan API (arka uç) ile iletişim kurulamadı.",
+          kombinOnerisi: "Eğer GitHub'da api/styler.js dosyan yoksa veya Vercel ayarlarında GEMINI_API_KEY eksikse bu hata oluşur.",
+          stilMesaji: "Hata detayı: " + err.message
         };
       }
 
@@ -301,9 +238,7 @@
       state.step = 6;
       render();
     }
-  }; // IroStyle objesini kapatır
+  };
 
-  // Uygulamayı ilk kez ekrana çiz (Sağ alttaki butonu çıkarır)
   render();
-
-})(); // En baştaki ana fonksiyonu kapatır
+})();
