@@ -1,6 +1,6 @@
 (function () {
   // ============================================================
-  //  IroStyle Widget — v1.1 (Focus Fix & Error Handling)
+  //  IroStyle Widget — v1.2 (Devam Butonu Fix)
   // ============================================================
 
   const SKIN_TONES = [
@@ -102,9 +102,10 @@
           `<button class="iro-chip ${state.product === p ? "active" : ""}" onclick="IroStyle.set('product','${p}')">${p}</button>`
         ).join("")}</div>`;
     } else if (state.step === 2) {
+      // BURADAKİ HATA DÜZELTİLDİ: 'height' yerine 'weight' yazıldı.
       body = `<div class="iro-label">Boy ve kilonu gir</div>
-        <input class="iro-input" type="number" placeholder="Boy (cm)" value="${state.height}" oninput="IroStyle.updateInput('height',this.value)">
-        <input class="iro-input" type="number" placeholder="Kilo (kg)" value="${state.weight}" oninput="IroStyle.updateInput('height', state.height); state.weight=this.value; document.getElementById('iro-next-btn').className = (state.height && state.weight) ? 'iro-main-btn active' : 'iro-main-btn disabled';">`;
+        <input class="iro-input" type="number" placeholder="Boy (cm)" value="${state.height}" oninput="IroStyle.updateInput('height', this.value)">
+        <input class="iro-input" type="number" placeholder="Kilo (kg)" value="${state.weight}" oninput="IroStyle.updateInput('weight', this.value)">`;
     } else if (state.step === 3) {
       body = `<div class="iro-label">Ten rengini seç</div>
         <div class="iro-skin-grid">${SKIN_TONES.map((t, i) =>
@@ -198,7 +199,7 @@
     },
     async analyze() {
       state.loading = true;
-      render(); // Yükleniyor animasyonunu gösterir
+      render();
 
       try {
         const prompt = `Ürün: ${state.product}, Boy: ${state.height}cm, Kilo: ${state.weight}kg, Ten: ${state.skinTone?.label}, Saç: ${state.hairColor}, Göz: ${state.eyeColor}, Ortam: ${state.occasion}`;
@@ -222,7 +223,6 @@
 
       } catch (err) {
         console.error("Analiz hatası:", err);
-        // Hata olsa bile sistemi çökertmeyip hata mesajını şık bir şekilde gösteririz
         state.result = {
           beden: "⚠️",
           bedenAciklama: "Bağlantı Hatası",
