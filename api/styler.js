@@ -1,36 +1,44 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export default async function handler(req, res) {
-  // Sadece POST isteklerini (bizim widget'ın gönderdiği formları) kabul et
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Sadece POST istekleri kabul edilir.' });
-  }
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY bulunamadı.' });
+
+  const { prompt, systemPrompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'Prompt eksik.' });
 
   try {
-    const { prompt, systemPrompt } = req.body;
-    
-    // Vercel'deki gizli kasamızdan API anahtarını alıyoruz
-    const apiKey = process.env.GEMINI_API_KEY;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt || '' }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 1000
+          }
+        })
+      }
+    );
 
-    if (!apiKey) {
-      return res.status(500).json({ error: "GEMINI_API_KEY Vercel'de bulunamadı. Lütfen ayarları kontrol edin." });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({ error: data.error?.message || 'Gemini API hatası' });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Sistem talimatı ile kullanıcının boy/kilo verilerini birleştiriyoruz
-    const fullPrompt = `${systemPrompt}\n\nKullanıcı Verileri:\n${prompt}`;
-
-    // Gemini'ye soruyu gönder ve bekle
-    const result = await model.generateContent(fullPrompt);
-    const text = result.response.text();
-
-    // Çıkan sonucu başarıyla widget'a geri gönder
-    res.status(200).json({ result: text });
+    return res.status(200).json(data);
 
   } catch (error) {
-    console.error("API Hatası:", error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
